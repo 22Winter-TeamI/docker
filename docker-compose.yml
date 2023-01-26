@@ -1,0 +1,47 @@
+version: "3"
+
+services:
+  db:
+    image: mysql:8.0.29
+    container_name: mysql-con
+    env_file:
+      - ./.env
+    ports:
+      - 3306:3306
+    expose:
+      - 3306
+    volumes:
+      - data_mysql:/mysql
+    # networks:
+    #   - app-tier
+    # 명령어 실행 끝나도 안꺼짐
+    # restart: always
+    healthcheck:
+      test: mysql ${MYSQL_DATABASE} --user=${MYSQL_ROOT_USER} --password='${MYSQL_PASSWORD}' --silent --execute "SELECT 1;"
+      interval: 10s
+      timeout: 2s
+      retries: 100
+
+  backend:
+  
+    container_name: backend-con
+    build:
+      context: ./backend
+    ports:
+      - 8000:8000
+    volumes:
+      - ./backend:/backend/
+    # restart: always 배포때만
+    env_file:
+      - ./.env
+    depends_on:
+      - db
+    # command: 
+    # networks:
+    #   - app-tier
+    # 명령어 실행 끝나도 안꺼짐
+    
+  
+  
+volumes:
+  data_mysql:
